@@ -1,71 +1,42 @@
-# ai-commit-helper README
+# AI Commit Helper
 
-This is the README for your extension "ai-commit-helper". After writing up a brief description, we recommend including the following sections.
+This VS Code extension uses the power of Google's Gemini API to generate concise and informative Git commit messages based on your staged changes.  It helps streamline your workflow by automating the often tedious task of writing commit messages.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* **Automatic Commit Message Generation:** Analyzes your staged changes using `git diff --cached` and sends them to the Gemini API to generate a relevant commit message.
+* **Error Handling:** Provides informative error messages if issues occur fetching staged changes, generating the commit message, or committing the changes.
+* **API Key Management:** Uses the `GOOGLE_API_KEY` environment variable for secure API key storage.  Prompts the user to set the key if it's not found.
+* **Seamless Integration:**  Directly commits the generated message using `git commit`.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+* **VS Code:**  This extension is designed for Visual Studio Code.
+* **Git:**  Requires Git to be installed and configured in your project.
+* **Google Cloud Project:** You need a Google Cloud project with the Gemini API enabled.
+* **Google API Key:** An API key is required to access the Gemini API. Store this securely as an environment variable named `GOOGLE_API_KEY`.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+This extension currently does not utilize any VS Code specific settings.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+* **Dependency on Environment Variable:** The extension relies on the `GOOGLE_API_KEY` environment variable.  Setting this up can be challenging for some users.  Future improvements could explore alternative key storage mechanisms.
+* **Limited Customization:** Currently, the commit message prompt sent to the Gemini API is fixed.  Adding options for customization could enhance the extension's flexibility.
+* **Handling Large Diffs:**  Very large diffs might cause issues with the API request or generate less effective commit messages.  Investigating performance and potential limitations with large diffs is recommended for future development.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
+Initial release of the AI Commit Helper extension.
 
-### 1.0.1
+## Future Enhancements
 
-Fixed issue #.
+* **Customizable Prompts:** Allow users to modify the prompt sent to the Gemini API to tailor the generated commit messages.
+* **Alternative API Key Storage:** Explore options for securely storing the API key within VS Code settings rather than relying on an environment variable.
+* **Diff Chunking:**  Implement logic to handle large diffs by breaking them into smaller chunks for more effective processing by the Gemini API.
+* **User Interface:**  Add a preview of the generated commit message before committing, allowing users to edit if necessary.
 
-### 1.1.0
 
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
