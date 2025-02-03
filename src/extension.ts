@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-
+import * as path from 'path';
 // Define interface for API response
 interface GeminiResponse {
     candidates?: {
@@ -14,33 +14,56 @@ interface GeminiResponse {
 
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('aiCommitHelper.generateCommit', async () => {
-        exec('git diff head', async (error, stdout, stderr) => {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        
+        if (!workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace folder found.');
+            return;
+        }
+
+        const repoPath = workspaceFolders[0].uri.fsPath; // Get workspace root
+        vscode.window.showInformationMessage(`Using repo path: ${repoPath}`);
+        exec('git status', { cwd: repoPath }, (error, stdout, stderr) => {
             if (error) {
-                vscode.window.showErrorMessage(`Error fetching staged changes: ${stderr || error.message}`);
-                console.error("Git Error:", error, stderr);
+                vscode.window.showErrorMessage(`Error: ${error.message}`);
                 return;
             }
-        
-            if (!stdout.trim()) {
-                vscode.window.showWarningMessage("No staged changes found.");
+            if (stderr) {
+                vscode.window.showErrorMessage(`stderr: ${stderr}`);
                 return;
             }
-        
-            let commitMessage = await generateCommitMessage(stdout);
-        
-            if (!commitMessage) {
-                vscode.window.showErrorMessage('Failed to generate commit message.');
-                return;
-            }
-        
-            exec(`git commit -m "${commitMessage}"`, (err) => {
-                if (err) {
-                    vscode.window.showErrorMessage('Error committing changes.');
-                } else {
-                    vscode.window.showInformationMessage('Commit created successfully.');
+            vscode.window.showInformationMessage(`stdout: ${stdout}`);
+
+            exec('git diff head',{ cwd: repoPath }, async (error, stdout, stderr) => {
+                if (error) {
+                          vscode.window.showErrorMessage(`Error fetching staged changes: ${stderr || error.message}`);
+                    console.error("Git Error:", error, stderr);
+                    return;
                 }
+            
+                if (!stdout.trim()) {
+                    vscode.window.showWarningMessage("No staged changes found.");
+                    return;
+                }
+            
+                let commitMessage = await generateCommitMessage(stdout);
+            
+                if (!commitMessage) {
+                    vscode.window.showErrorMessage('Failed to generate commit message.');
+                    return;
+                }
+            
+                exec(`git commit -m "${commitMessage}"`,{ cwd: repoPath }, (err) => {
+                    if (err) {
+                        vscode.window.showErrorMessage('Error committing changes.');
+                    } else {
+                        vscode.window.showInformationMessage('Commit created successfully.');
+                    }
+                });
             });
         });
+
+        
     });
 
     context.subscriptions.push(disposable);
