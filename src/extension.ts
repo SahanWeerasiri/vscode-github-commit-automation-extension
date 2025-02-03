@@ -40,33 +40,35 @@ export function activate(context: vscode.ExtensionContext) {
             const envPath = `${repoPath}/.env`;
             dotenv.config({ path: envPath });
 
-            exec('git diff head',{ cwd: repoPath }, async (error, stdout, stderr) => {
-                if (error) {
-                          vscode.window.showErrorMessage(`Error fetching staged changes: ${stderr || error.message}`);
-                    console.error("Git Error:", error, stderr);
-                    return;
-                }
             
-                if (!stdout.trim()) {
-                    vscode.window.showWarningMessage("No staged changes found.");
-                    return;
-                }
-            
-                let commitMessage = await generateCommitMessage(stdout);
-            
-                if (!commitMessage) {
-                    vscode.window.showErrorMessage('Failed to generate commit message.');
-                    return;
-                }
-            
-                exec(`git commit -m "${commitMessage}"`,{ cwd: repoPath }, (err) => {
-                    if (err) {
-                        vscode.window.showErrorMessage('Error committing changes.');
-                    } else {
-                        vscode.window.showInformationMessage('Commit created successfully.');
+                exec('git diff head',{ cwd: repoPath }, async (error, stdout, stderr) => {
+                    if (error) {
+                            vscode.window.showErrorMessage(`Error fetching staged changes: ${stderr || error.message}`);
+                        console.error("Git Error:", error, stderr);
+                        return;
                     }
+                
+                    if (!stdout.trim()) {
+                        vscode.window.showWarningMessage("No staged changes found.");
+                        return;
+                    }
+                
+                    let commitMessage = await generateCommitMessage(stdout);
+                
+                    if (!commitMessage) {
+                        vscode.window.showErrorMessage('Failed to generate commit message.');
+                        return;
+                    }
+                
+                    exec(`git commit -m "${commitMessage}"`,{ cwd: repoPath }, (err) => {
+                        if (err) {
+                            vscode.window.showErrorMessage('Error committing changes.');
+                        } else {
+                            vscode.window.showInformationMessage('Commit created successfully.');
+                        }
+                    });
                 });
-            });
+            
         });
 
         
@@ -85,7 +87,7 @@ async function generateCommitMessage(diff: string): Promise<string> {
     try {
       // Initialize the Google Generative AI client
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   
       const prompt = `Generate a concise Git commit message for the following changes:
   
