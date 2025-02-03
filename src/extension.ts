@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
 
 // Define interface for API response
 interface GeminiResponse {
@@ -76,55 +78,50 @@ export function activate(context: vscode.ExtensionContext) {
 async function generateCommitMessage(diff: string): Promise<string> {
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
-        vscode.window.showErrorMessage("Google API key not found. Please set the GOOGLE_API_KEY environment variable.");
-        return "Error: API key missing";
+      vscode.window.showErrorMessage("Google API key not found. Please set the GOOGLE_API_KEY environment variable.");
+      return "Error: API key missing";
     }
-
-    const model = "text-bison-001";
-    const prompt = `Generate a concise Git commit message for the following changes:\n\n\`\`\`diff\n${diff}\n\`\`\``;
-
+  
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/${model}:generateText`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`,
-                },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }], 
-                }),
-            }
-        );
-
-        // Ensure response status is OK
-        if (!response.ok) {
-            const errorData = await response.text(); // Get response text if JSON is malformed
-            console.error("Gemini API Error:", errorData);
-            throw new Error(`Gemini API request failed with status ${response.status}: ${response.statusText}`);
-        }
-
-        // Parse response body if available
-        const responseText = await response.text();
-        if (!responseText) {
-            throw new Error("Empty response body from Gemini API");
-        }
-
-        const data = JSON.parse(responseText) as GeminiResponse; // Parse the text manually
-
-        if (!data.candidates?.[0]?.output) {
-            throw new Error("Invalid response format from Gemini API");
-        }
-
-        return data.candidates[0].output.trim();
-
+      // Initialize the Google Generative AI client
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  
+      const prompt = `Generate a concise Git commit message for the following changes:
+  
+  \`\`\`diff
+  ${diff}
+  \`\`\`
+  
+  Guidelines:
+  - Keep the commit message short (50-72 characters)
+  - Use imperative mood (e.g., "Add feature" not "Added feature")
+  - Clearly describe the main purpose of the changes
+  - Focus on the "what" and "why", not the "how"`;
+  
+      // Generate the commit message
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const commitMessage = response.text().trim();
+  
+      // Validate and truncate the commit message if needed
+      const validatedMessage = commitMessage.length > 72 
+        ? commitMessage.substring(0, 72).trim() 
+        : commitMessage;
+  
+      return validatedMessage;
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        vscode.window.showErrorMessage(error instanceof Error ? error.message : "Error calling Gemini API.");
-        return "Error generating commit message";
+      console.error("Error calling Gemini API:", error);
+      
+      // Provide a more detailed error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Unexpected error generating commit message";
+      
+      vscode.window.showErrorMessage(errorMessage);
+      return "Error generating commit message";
     }
-}
+  }
 
 
 export function deactivate() {}
