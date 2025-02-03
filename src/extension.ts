@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
+
 // Define interface for API response
 interface GeminiResponse {
     candidates?: {
@@ -33,6 +35,12 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
             vscode.window.showInformationMessage(`stdout: ${stdout}`);
+
+            dotenv.config(
+                {
+                    path: repoPath
+                }
+            );
 
             exec('git diff head',{ cwd: repoPath }, async (error, stdout, stderr) => {
                 if (error) {
