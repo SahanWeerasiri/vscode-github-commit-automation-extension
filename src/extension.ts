@@ -93,19 +93,26 @@ async function generateCommitMessage(diff: string): Promise<string> {
                     "Authorization": `Bearer ${apiKey}`,
                 },
                 body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    contents: [{ role: "user", parts: [{ text: prompt }] }], 
                 }),
             }
         );
 
+        // Ensure response status is OK
         if (!response.ok) {
-            const errorData = await response.json() as GeminiResponse;
+            const errorData = await response.text(); // Get response text if JSON is malformed
             console.error("Gemini API Error:", errorData);
             throw new Error(`Gemini API request failed with status ${response.status}: ${response.statusText}`);
         }
 
-        const data = await response.json() as GeminiResponse;
-        
+        // Parse response body if available
+        const responseText = await response.text();
+        if (!responseText) {
+            throw new Error("Empty response body from Gemini API");
+        }
+
+        const data = JSON.parse(responseText) as GeminiResponse; // Parse the text manually
+
         if (!data.candidates?.[0]?.output) {
             throw new Error("Invalid response format from Gemini API");
         }
@@ -118,5 +125,6 @@ async function generateCommitMessage(diff: string): Promise<string> {
         return "Error generating commit message";
     }
 }
+
 
 export function deactivate() {}
