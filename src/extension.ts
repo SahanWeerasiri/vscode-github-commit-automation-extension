@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Define interface for API response
@@ -36,11 +35,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
             vscode.window.showInformationMessage(`stdout: ${stdout}`);
 
-            dotenv.config(
-                {
-                    path: repoPath
-                }
-            );
+            const envPath = `${repoPath}/.env`;
+            dotenv.config({ path: envPath });
 
             exec('git diff head',{ cwd: repoPath }, async (error, stdout, stderr) => {
                 if (error) {
