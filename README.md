@@ -39,4 +39,24 @@ Initial release of the AI Commit Helper extension.
 * **Diff Chunking:**  Implement logic to handle large diffs by breaking them into smaller chunks for more effective processing by the Gemini API.
 * **User Interface:**  Add a preview of the generated commit message before committing, allowing users to edit if necessary.
 
+## Installation
+```bash
+git clone <repo-url>
+cd vscode-github-commit-automation-extension
+npm install
+```
+
+* Add your google api key to the place where it uses
+
+```bash
+npx vsce package
+code --install-extension ai-commit-helper-0.0.1.vsix
+```
+
+## Usage
+
+* Stage your changes
+* `Ctrl`+`Shift`+`P`
+* Generate AI Commit Message
+
 
