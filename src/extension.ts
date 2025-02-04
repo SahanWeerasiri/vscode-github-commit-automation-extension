@@ -78,7 +78,8 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function generateCommitMessage(diff: string): Promise<string> {
-    const apiKey = process.env.GOOGLE_API_KEY;
+    //const apiKey = process.env.GOOGLE_API_KEY;
+    const apiKey = "<your-api-key>";
     if (!apiKey) {
       vscode.window.showErrorMessage("Google API key not found. Please set the GOOGLE_API_KEY environment variable.");
       return "Error: API key missing";
